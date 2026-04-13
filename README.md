@@ -70,7 +70,7 @@ Detailed rules:
 
 *   **`blocklists.txt`** / **`allowlists.txt`**: Automatically updated **every hour**.
     *   **Logic**: Domains in `allowlists.txt` override `blocklists.txt`, ensuring they are never blocked even if flagged by a filter (prevents false positives).
-    *   **How to configure**: Edit the URLs in the `curl` command inside [update_lists.sh#L34-L43](update_lists.sh) to add or remove filtering sources.
+    *   **How to configure**: Edit the URLs in the `curl` command inside [update_lists.sh](update_lists.sh#L34-L43) to add or remove filtering sources.
 *   **`private_tlds.txt`**: Add your custom local domains or router URLs here.
 *   **`redirect_rules.txt`**: Redirects domain A to domain B using a CNAME record. Perfect for forcing specific CDN results.
     *   **Format**: `source-domain target-domain`

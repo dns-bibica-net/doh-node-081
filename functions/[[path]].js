@@ -29,6 +29,9 @@ const PRIVATE_TLD_URL = '/rules/private_tlds.txt';
 const DNS_REDIRECT_ENABLED = true;
 const REDIRECT_RULES_URL = '/rules/redirect_rules.txt';
 
+// /debug endpoint — set to true only when needed, false by default to avoid unnecessary requests
+const DEBUG_ENABLED = false;
+
 // Pre-compiled regex patterns for performance
 const IPV4_MAPPED_REGEX = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i;
 const IPV6_VALID_REGEX = /^[0-9a-f:]+$/i;
@@ -214,30 +217,30 @@ function hasLoopbackInAnswer(buf) {
 
 function isDomainBlocked(domain) {
   if (!domain || adBlocklist.size === 0) return false;
-  
+
   // EXACT MATCH ONLY - Check allowlist first (priority)
   if (adAllowlist.has(domain)) return false;
-  
+
   // EXACT MATCH ONLY - Check blocklist
   if (adBlocklist.has(domain)) return true;
-  
+
   return false;
 }
 
 // Check if domain matches private TLD list (suffix match)
 function isDomainPrivate(domain) {
   if (!domain || privateTlds.size === 0) return false;
-  
+
   // Exact match (e.g. query for "localhost" or "192.168.1.1")
   if (privateTlds.has(domain)) return true;
-  
+
   // Suffix match: efficient with substring + indexOf
   let pos = 0;
   while ((pos = domain.indexOf('.', pos)) !== -1) {
     if (privateTlds.has(domain.substring(pos + 1))) return true;
     pos++; // Move past the dot
   }
-  
+
   return false;
 }
 
@@ -764,6 +767,7 @@ async function handleRequest(request, context) {
   if (path === '/dns-query') return handleDNSQuery(request, context);
 
   if (path === '/debug') {
+    if (!DEBUG_ENABLED) return new Response('Not Found', { status: 404 });
     if (AD_BLOCK_ENABLED || BLOCK_PRIVATE_TLD || DNS_REDIRECT_ENABLED) {
       await ensureBlocklistsLoaded(request.url, context);
     }
@@ -832,7 +836,7 @@ async function handleRequest(request, context) {
     return new Response(profile, {
       headers: {
         'Content-Type': 'application/x-apple-aspen-config',
-        'Content-Disposition': 'attachment; filename="DoH-Profile.mobileconfig"'
+        'Content-Disposition': `attachment; filename="${host}.mobileconfig"`
       }
     });
   }
